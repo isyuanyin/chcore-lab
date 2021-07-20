@@ -1,0 +1,107 @@
+diff --git a/Makefile b/Makefile
+index 55c3178..c9952dc 100644
+--- a/Makefile
++++ b/Makefile
+@@ -15,9 +15,9 @@ gdb:
+ 	gdb-multiarch -n -x .gdbinit
+ 
+ build: FORCE
+-	./scripts/docker_build.sh
++	./scripts/build.sh
+ 
+-qemu: $(IMAGES) 
++qemu: $(IMAGES)
+ 	$(QEMU) $(QEMUOPTS)
+ 
+ qemu-gdb: $(IMAGES)
+@@ -30,9 +30,6 @@ qemu-gdb: $(IMAGES)
+ gdbport:
+ 	@echo $(GDBPORT)
+ 
+-docker: FORCE	
+-	./scripts/run_docker.sh
+-
+ grade: build FORCE
+ 	@echo "make grade"
+ 	@echo "LAB"$(LAB)": test >>>>>>>>>>>>>>>>>"
+diff --git a/kernel/common/printk.c b/kernel/common/printk.c
+index 29ebc95..ba6206d 100644
+--- a/kernel/common/printk.c
++++ b/kernel/common/printk.c
+@@ -120,6 +120,20 @@ static int printk_write_num(char **out, long long i, int base, int sign,
+ 	// 1. the last postion of this buffer must be '\0'
+ 	// 2. the format is only decided by `base` and `letbase` here
+ 
++	s = print_buf + PRINT_BUF_LEN - 1;
++	*s = '\0';
++
++	while (u) {
++		-- s;
++		t = u % base;
++		if (t < 10) {
++			*s = t + '0';
++		} else {
++			*s = letbase + (t - 10);
++		}
++		u /= base;
++	}
++
+ 	if (neg) {
+ 		if (width && (flags & PAD_ZERO)) {
+ 			simple_outputchar(out, '-');
+diff --git a/kernel/monitor.c b/kernel/monitor.c
+index 00dd7b5..47ad139 100644
+--- a/kernel/monitor.c
++++ b/kernel/monitor.c
+@@ -31,5 +31,20 @@ int stack_backtrace()
+ 
+ 	// Your code here.
+ 
++	u64 *fp = (u64 *) read_fp();
++	u64 *lr = (u64 *) *(fp + 1);
++	fp = (u64 * ) *fp;
++
++	while (fp) {
++		printk("LR %lx FP %lx Args", lr, fp);
++
++		for (int i = -2; i < 3; i++)
++			printk(" %d", *(fp + i));
++
++		printk("\n");
++
++		fp = (u64 *) *fp;
++	}
++
+ 	return 0;
+ }
+diff --git a/scripts/build.sh b/scripts/build.sh
+index 6a2a9a8..fe1bc24 100755
+--- a/scripts/build.sh
++++ b/scripts/build.sh
+@@ -1,5 +1,7 @@
+ #!/bin/bash
+ 
++rm -rf ./build
++
+ if [ ! -d "build" ]; then
+     mkdir build
+     cd build
+diff --git a/scripts/docker_build.sh b/scripts/docker_build.sh
+deleted file mode 100755
+index 9ef687a..0000000
+--- a/scripts/docker_build.sh
++++ /dev/null
+@@ -1,4 +0,0 @@
+-#!/bin/bash
+-rm -rf ./build
+-
+-docker run -it --rm -u $(id -u ${USER}):$(id -g ${USER}) -v $(pwd):/chos -w /chos ipads/chcore_builder:v1.0 ./scripts/build.sh "$@"
+diff --git a/scripts/run_docker.sh b/scripts/run_docker.sh
+deleted file mode 100755
+index a0b304a..0000000
+--- a/scripts/run_docker.sh
++++ /dev/null
+@@ -1,2 +0,0 @@
+-#!/bin/bash
+-docker run -it --rm -u $(id -u ${USER}):$(id -g ${USER}) -v $(pwd):/chos -w /chos ipads/chcore_builder:v1.0
+\ No newline at end of file

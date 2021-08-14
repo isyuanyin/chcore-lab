@@ -1,8 +1,8 @@
-# ChChore lab3：用户进程和异常管理
+# ChCore Lab3：用户进程和异常管理
 
 
 
-
+​       
 
 ## 练习1
 
@@ -23,6 +23,9 @@
 > 请简要描述process_create_root这一函数所的逻辑。注意：描述中 需包含thread_create_main函数的详细说明，建议绘制函数调用图 以描述相关逻辑。
 
 
+
+```gr
+```
 
 
 

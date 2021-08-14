@@ -1,6 +1,6 @@
 # ChCore lab1：机器启动
 
-注意：关于本文有任何疑问请联系我，通过[点击此处](https://github.com/isyuanyin/chcore-lab/blob/main/README.md)
+关于本文有任何疑问请联系我，通过[点击此处](https://github.com/zhyuyi/chcore-lab/blob/main/README.md)
 
 
 
